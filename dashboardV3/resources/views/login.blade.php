@@ -29,29 +29,34 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#loginForm').on('submit', function (e) {
-            e.preventDefault();
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-            const email = $('#email').val();
-            const password = $('#password').val();
+        // Datos del formulario
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-            $.ajax({
-                url: '/api/login', // Ruta a la API de autenticación
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ email, password }),
-                success: function (response) {
-                    // Almacena el token en el almacenamiento local
-                    localStorage.setItem('token', response.token);
-                    window.location.href = '/marcas'; // Redirige a la página de marcas o a donde prefieras
-                },
-                error: function (xhr) {
-                    // Muestra el error en caso de que las credenciales no sean válidas
-                    $('#error').removeClass('d-none').text(xhr.responseJSON.message || 'Error al iniciar sesión');
+        // Enviar la solicitud de login
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email, password: password })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.access_token) {
+                    // Guardar el token en localStorage
+                    localStorage.setItem('auth_token', data.access_token);
+
+                    // Redirigir a la vista de marcas
+                    window.location.href = '/marcas';
+                } else {
+                    alert('Credenciales incorrectas');
                 }
-            });
-        });
+            })
+            .catch(error => console.error('Error:', error));
     });
 </script>
 </body>

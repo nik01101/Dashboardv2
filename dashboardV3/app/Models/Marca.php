@@ -32,6 +32,10 @@ class Marca extends Model
         'checked',
     ];
 
-    // Si no estás utilizando timestamps, agrega esta propiedad
     public $timestamps = false;
+
+    public function detallesVenta()
+    {
+        return $this->hasMany(DetalleVentaMarcaMes::class, 'marc_codi', 'marc_codi');
+    }
 }

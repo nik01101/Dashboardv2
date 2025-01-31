@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listado de Marcas</title>
-    <!-- Incluir los estilos de DataTables y Chart.js -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+    <!-- Enlace al archivo CSS -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Enlace al archivo JS -->
+    <script src="{{ asset('js/app.js') }}"></script>
+    <link href="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.1.8/b-3.1.2/b-html5-3.1.2/date-1.5.4/r-3.0.3/sc-2.4.3/sl-2.1.0/datatables.min.css" rel="stylesheet">
+
+    <script src="https://cdn.datatables.net/v/dt/jq-3.7.0/jszip-3.10.1/dt-2.1.8/b-3.1.2/b-html5-3.1.2/date-1.5.4/r-3.0.3/sc-2.4.3/sl-2.1.0/datatables.min.js"></script>
+
+
+
+
 </head>
 <body>
+<button id="logoutButton">Cerrar sesión</button>
+
 <h1>Listado de Marcas</h1>
 
 <!-- Tabla de Marcas -->
@@ -30,13 +43,11 @@
 <canvas id="marcaChart"></canvas>
 
 <!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 <script>
     $(document).ready(function() {
-        var token = localStorage.getItem('token');
+        var token = localStorage.getItem('auth_token');
 
         $('#marcaTable').DataTable({
             ajax: {
@@ -45,7 +56,17 @@
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
-                dataSrc: 'data',
+                "paging": true,
+                "pageLength": 10,
+                buttons: [
+                    { extend: 'excel',text: 'Exportar Excel<i class="fas fa-file-excel fa-lg"></i>',
+                        className:'btn btn-success excel-exp'},
+                    { extend: 'copy',text: 'Copiar Datos<i class="fas fa-file-excel fa-lg"></i>',
+                        className:'btn btn-success excel-exp'},
+                    { extend: 'csv',text: 'Exportar CSV<i class="fas fa-file-excel fa-lg"></i>',
+                        className:'btn btn-success excel-exp'}
+                ],
+                dataSrc: '',
                 error: function(xhr) {
                     if (xhr.status === 401) {
                         alert('No autorizado. Por favor, inicie sesión nuevamente.');
@@ -57,19 +78,39 @@
                 { data: 'marc_descl', title: 'Descripción Larga' },
                 { data: 'marc_descc', title: 'Descripción Corta' },
                 { data: 'estado', title: 'Estado' },
-                { data: 'marc_cuota', title: 'Cuota' },
-                { data: 'marc_char2', title: 'Char2' },
-                { data: 'marc_ucre', title: 'Creado Por' },
-                { data: 'marc_fcre', title: 'Fecha de Creación' },
-                { data: 'marc_umod', title: 'Modificado Por' },
-                { data: 'marc_fmod', title: 'Fecha de Modificación' },
-                { data: 'checked', title: 'Revisado' }
+                { data: 'marc_cuota', title: 'Cuota' }
             ]
         });
 
+
+    });
+</script>
+<script>
+    // Obtén el botón de logout y añade un evento de clic
+    document.getElementById('logoutButton').addEventListener('click', function() {
+        logout();
     });
 
-
+    function logout() {
+        fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('auth_token'), // Token almacenado en localStorage
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Sesión cerrada exitosamente') {
+                    alert(data.message);
+                    localStorage.removeItem('auth_token'); // Eliminar el token del almacenamiento
+                    window.location.href = '/login'; // Redireccionar a la página de login
+                } else {
+                    alert('Error al cerrar sesión');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
 </script>
 </body>
 </html>
