@@ -4,9 +4,17 @@
         {
             "src": "public/index.php",
             "use": "@vercel/php@latest"
+        },
+        {
+            "src": "api/**/*.php",
+            "use": "@vercel/php@latest"
         }
     ],
     "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
         {
             "src": "/(.*)",
             "dest": "/public/index.php"
